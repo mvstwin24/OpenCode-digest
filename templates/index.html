@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ site.title }}</title>
+  <meta name="description" content="{{ site.description }}">
+  <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+  <!-- Два «светящихся пятна» на фоне для объёма и глубины -->
+  <div class="bg-orb bg-orb--one" aria-hidden="true"></div>
+  <div class="bg-orb bg-orb--two" aria-hidden="true"></div>
+
+  <!-- Шапка-приветствие -->
+  <header class="hero">
+    <nav class="hero-nav" aria-label="Меню">
+      <a class="hero-brand" href="/" aria-label="МВС-технология — на главную">
+        <img class="hero-brand__logo"
+             src="{{ url_for('static', filename='logo.png') }}"
+             alt="МВС-технология"
+             width="640" height="360">
+      </a>
+      <div class="hero-nav__links">
+        <a class="hero-nav__link hero-nav__link--featured"
+           href="#cards" data-featured-link>Наши внедрения</a>
+        <a class="hero-nav__link" href="#cards">Материалы</a>
+      </div>
+    </nav>
+
+    <div class="hero-intro">
+      <p class="hero-eyebrow">Битрикс24 и автоматизация</p>
+      <h1>{{ site.title }}</h1>
+      <p class="hero-subtitle">{{ site.subtitle }}</p>
+      <a class="btn btn--primary" href="#cards">Смотреть материалы</a>
+    </div>
+  </header>
+
+  <!-- Контент: поиск + фильтры + карточки -->
+  <main class="content" id="cards">
+
+    <section class="toolbar">
+      <label class="search" for="searchInput">
+        <span class="search__icon" aria-hidden="true">
+          <!-- SVG-лупа -->
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="7"></circle>
+            <line x1="21" y1="21" x2="16.5" y2="16.5"></line>
+          </svg>
+        </span>
+        <input id="searchInput" type="search" placeholder="Например, вебхуки или роботы…" autocomplete="off">
+        <button class="search__clear" id="searchClear" type="button" hidden aria-label="Очистить поиск">&times;</button>
+      </label>
+
+      <!-- Кнопки-фильтры по тегам (собираются автоматически в script.js) -->
+      <div class="chips" id="tagFilters" role="group" aria-label="Фильтр по тегам"></div>
+
+      <p class="toolbar__count" id="resultCount" aria-live="polite"></p>
+    </section>
+
+    <!-- Все карточки. Server-side рендер: работает даже без JavaScript.
+         data-атрибуты нужны для поиска и фильтров. -->
+    <section class="cards" id="cardsGrid">
+      {% for card in cards %}
+        <article class="card" id="card-{{ card.id }}"
+                 data-title="{{ card.title }}"
+                 data-description="{{ card.description }}"
+                 data-tags="{{ card.tags | join(',') | lower }}">
+          {% set is_featured = 'наши внедрения' in card.tags %}
+          <header class="card__head">
+            <span class="card__num">{{ "%02d" | format(loop.index) }}</span>
+            {% if is_featured %}
+              <span class="card__badge">Наши внедрения</span>
+            {% endif %}
+            <ul class="card__tags" aria-label="Теги">
+              {% for tag in card.tags %}
+                {% if tag != 'наши внедрения' %}
+                  <li><button type="button" class="tag" data-tag="{{ tag | lower }}">{{ tag }}</button></li>
+                {% endif %}
+              {% endfor %}
+            </ul>
+          </header>
+
+          <h2 class="card__title">{{ card.title }}</h2>
+          <p class="card__description">{{ card.description }}</p>
+
+          {% set is_external = card.link.startswith('http') %}
+          <a class="btn btn--card"
+             href="{{ card.link }}"
+             {% if is_external %}target="_blank" rel="noopener noreferrer"{% endif %}>
+            Открыть материал
+          </a>
+        </article>
+      {% endfor %}
+    </section>
+
+    <!-- Пустое состояние: когда ничего не найдено -->
+    <p class="empty" id="emptyState" hidden>
+      Ничего не нашлось. Попробуйте другой запрос или сбросьте фильтры.
+    </p>
+
+    <!-- Финальный призыв к действию -->
+    <section class="cta">
+      <h2>Готовы автоматизировать свой Битрикс24?</h2>
+      <p>Напишите нам — подскажем, с чего начать, и сориентируем по стоимости внедрения.</p>
+      <a class="btn btn--invert" href="mailto:hello@example.com">Получить консультацию</a>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <p>Сайт-дайджест про Битрикс24 и автоматизацию.</p>
+    <p class="footer__muted">Ссылки ведут на официальные материалы Битрикс24.</p>
+  </footer>
+
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
